@@ -21,6 +21,11 @@ export const useAuthStore = create((set, get) => ({
       const res = await axiosInstance.get("/auth/check");
 
       set({ authUser: res.data });
+      // Persist the refreshed token so the axios interceptor can read it
+      // on all subsequent requests (e.g. after a page refresh).
+      if (res.data?.token) {
+        sessionStorage.setItem("jwt", res.data.token);
+      }
       get().connectSocket();
     } catch (error) {
       console.log("Error in checkAuth:", error);
