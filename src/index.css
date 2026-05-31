@@ -1,0 +1,81 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "DM Sans", system-ui, sans-serif;
+    --font-mono: "DM Mono", monospace;
+  }
+
+  * {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code, kbd, pre, samp {
+    font-family: var(--font-mono);
+  }
+
+  /* Subtle custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--bc) / 0.15);
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--bc) / 0.28);
+  }
+}
+
+@layer components {
+  /* Shared input style for auth pages */
+  .auth-input {
+    @apply w-full pr-4 py-2.5 bg-base-200/60 rounded-xl border border-base-300/60 text-sm
+      placeholder:text-base-content/30 focus:outline-none focus:border-primary/50 focus:bg-base-200
+      transition-all duration-150;
+  }
+}
+
+@layer utilities {
+  /* Smooth scale on interactive elements */
+  .press {
+    @apply transition-transform duration-100 active:scale-95;
+  }
+
+  /* Fade-in animation */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up {
+    animation: fadeUp 0.22s ease both;
+  }
+
+  /* Slide-in from top for dropdowns */
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .animate-slide-down {
+    animation: slideDown 0.18s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Pulse dot for online status */
+  @keyframes pulseDot {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(142 76% 36% / 0.5); }
+    50%       { box-shadow: 0 0 0 4px hsl(142 76% 36% / 0); }
+  }
+  .pulse-dot {
+    animation: pulseDot 2s ease-in-out infinite;
+  }
+}
