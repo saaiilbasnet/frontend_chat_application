@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    allowedHosts: ["deandre-washiest-denisse.ngrok-free.dev"],
+    // Dev-only proxy — for local development against localhost:3001
     proxy: {
       "/api": {
         target: "http://localhost:3001",
