@@ -1,19 +1,31 @@
-import { Trash2, X } from "lucide-react";
+import { Ban, Trash2, UserMinus, X } from "lucide-react";
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 import ConfirmationModal from "./ConfirmationModal";
 
 const ChatHeader = () => {
-  const { selectedUser, setSelectedUser, deleteChat } = useChatStore();
+  const { selectedUser, setSelectedUser, deleteChat, unfriendUser, blockUser } = useChatStore();
   const { onlineUsers } = useAuthStore();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isUnfriendModalOpen, setIsUnfriendModalOpen] = useState(false);
+  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
 
   const isOnline = onlineUsers.includes(selectedUser._id);
 
   const handleDeleteChat = async () => {
     setIsDeleteModalOpen(false);
     await deleteChat(selectedUser._id);
+  };
+
+  const handleUnfriend = async () => {
+    setIsUnfriendModalOpen(false);
+    await unfriendUser(selectedUser._id);
+  };
+
+  const handleBlock = async () => {
+    setIsBlockModalOpen(false);
+    await blockUser(selectedUser._id);
   };
 
   return (
@@ -42,6 +54,20 @@ const ChatHeader = () => {
       {/* Actions */}
       <div className="flex items-center gap-1.5">
         <button
+          onClick={() => setIsUnfriendModalOpen(true)}
+          className="p-2 rounded-xl text-base-content/40 hover:text-warning hover:bg-warning/10 border border-transparent hover:border-warning/10 transition-all duration-150 press"
+          title="Unfriend"
+        >
+          <UserMinus className="w-4 h-4" />
+        </button>
+        <button
+          onClick={() => setIsBlockModalOpen(true)}
+          className="p-2 rounded-xl text-base-content/40 hover:text-error hover:bg-error/8 border border-transparent hover:border-error/10 transition-all duration-150 press"
+          title="Block"
+        >
+          <Ban className="w-4 h-4" />
+        </button>
+        <button
           onClick={() => setIsDeleteModalOpen(true)}
           className="p-2 rounded-xl text-base-content/40 hover:text-error hover:bg-error/8 border border-transparent hover:border-error/10 transition-all duration-150 press"
           title="Delete conversation"
@@ -63,6 +89,22 @@ const ChatHeader = () => {
         onConfirm={handleDeleteChat}
         title="Delete conversation"
         message={`This will permanently delete your conversation with ${selectedUser.fullName}. This cannot be undone.`}
+      />
+      <ConfirmationModal
+        isOpen={isUnfriendModalOpen}
+        onClose={() => setIsUnfriendModalOpen(false)}
+        onConfirm={handleUnfriend}
+        title="Unfriend user"
+        message={`Remove ${selectedUser.fullName} from your friends? You will need to send a new request before chatting again.`}
+        confirmText="Unfriend"
+      />
+      <ConfirmationModal
+        isOpen={isBlockModalOpen}
+        onClose={() => setIsBlockModalOpen(false)}
+        onConfirm={handleBlock}
+        title="Block user"
+        message={`Block ${selectedUser.fullName}? This removes the friendship and prevents messages or friend requests.`}
+        confirmText="Block"
       />
     </div>
   );

@@ -6,9 +6,15 @@ import { useAuthStore } from "./useAuthStore";
 export const useChatStore = create((set, get) => ({
   messages: [],
   users: [],
+  searchResults: [],
+  sentRequests: [],
+  receivedRequests: [],
+  blockedUsers: [],
   selectedUser: null,
   isUsersLoading: false,
   isMessagesLoading: false,
+  isFriendsLoading: false,
+  isSearchingUsers: false,
 
   getUsers: async () => {
     set({ isUsersLoading: true });
@@ -19,6 +25,121 @@ export const useChatStore = create((set, get) => ({
       toast.error(error.response?.data?.message || "Failed to load users");
     } finally {
       set({ isUsersLoading: false });
+    }
+  },
+
+  getFriendState: async () => {
+    set({ isFriendsLoading: true });
+    try {
+      const res = await axiosInstance.get("/friends");
+      set({
+        users: res.data.friends || [],
+        sentRequests: res.data.sentRequests || [],
+        receivedRequests: res.data.receivedRequests || [],
+        blockedUsers: res.data.blockedUsers || [],
+      });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to load friends");
+    } finally {
+      set({ isFriendsLoading: false });
+    }
+  },
+
+  searchUsersByName: async (fullName) => {
+    const query = fullName.trim();
+    if (query.length < 2) {
+      set({ searchResults: [] });
+      return;
+    }
+
+    set({ isSearchingUsers: true });
+    try {
+      const res = await axiosInstance.get("/friends/search", {
+        params: { fullName: query },
+      });
+      set({ searchResults: res.data });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to search users");
+    } finally {
+      set({ isSearchingUsers: false });
+    }
+  },
+
+  sendFriendRequest: async (userId) => {
+    try {
+      const res = await axiosInstance.post(`/friends/request/${userId}`);
+      toast.success(res.data?.message || "Friend request sent");
+      await get().getFriendState();
+      set((state) => ({
+        searchResults: state.searchResults.map((user) =>
+          user._id === userId ? { ...user, relationship: "request_sent" } : user
+        ),
+      }));
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send request");
+    }
+  },
+
+  acceptFriendRequest: async (userId) => {
+    try {
+      await axiosInstance.post(`/friends/accept/${userId}`);
+      toast.success("Friend request accepted");
+      await get().getFriendState();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to accept request");
+    }
+  },
+
+  declineFriendRequest: async (userId) => {
+    try {
+      await axiosInstance.post(`/friends/decline/${userId}`);
+      toast.success("Friend request declined");
+      await get().getFriendState();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to decline request");
+    }
+  },
+
+  unfriendUser: async (userId) => {
+    try {
+      await axiosInstance.delete(`/friends/${userId}`);
+      set((state) => ({
+        users: state.users.filter((user) => user._id !== userId),
+        selectedUser: state.selectedUser?._id === userId ? null : state.selectedUser,
+        messages: state.selectedUser?._id === userId ? [] : state.messages,
+      }));
+      toast.success("User unfriended");
+      await get().getFriendState();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to unfriend user");
+    }
+  },
+
+  blockUser: async (userId) => {
+    try {
+      await axiosInstance.post(`/friends/block/${userId}`);
+      set((state) => ({
+        users: state.users.filter((user) => user._id !== userId),
+        searchResults: state.searchResults.map((user) =>
+          user._id === userId ? { ...user, relationship: "blocked" } : user
+        ),
+        selectedUser: state.selectedUser?._id === userId ? null : state.selectedUser,
+        messages: state.selectedUser?._id === userId ? [] : state.messages,
+      }));
+      toast.success("User blocked");
+      await get().getFriendState();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to block user");
+    }
+  },
+
+  unblockUser: async (userId) => {
+    try {
+      await axiosInstance.post(`/friends/unblock/${userId}`);
+      toast.success("User unblocked");
+      await get().getFriendState();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to unblock user");
     }
   },
 
