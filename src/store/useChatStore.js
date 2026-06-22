@@ -3,6 +3,8 @@ import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
 
+const hasStoredToken = () => Boolean(sessionStorage.getItem("jwt") || localStorage.getItem("jwt"));
+
 export const useChatStore = create((set, get) => ({
   messages: [],
   users: [],
@@ -29,6 +31,17 @@ export const useChatStore = create((set, get) => ({
   },
 
   getFriendState: async () => {
+    if (!hasStoredToken()) {
+      set({
+        users: [],
+        sentRequests: [],
+        receivedRequests: [],
+        blockedUsers: [],
+        isFriendsLoading: false,
+      });
+      return;
+    }
+
     set({ isFriendsLoading: true });
     try {
       const res = await axiosInstance.get("/friends");
@@ -47,7 +60,7 @@ export const useChatStore = create((set, get) => ({
 
   searchUsersByName: async (fullName) => {
     const query = fullName.trim();
-    if (query.length < 2) {
+    if (query.length < 2 || !hasStoredToken()) {
       set({ searchResults: [] });
       return;
     }
