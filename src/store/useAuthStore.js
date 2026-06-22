@@ -20,12 +20,12 @@ export const useAuthStore = create((set, get) => ({
     try {
       const res = await axiosInstance.get("/auth/check");
 
-      set({ authUser: res.data });
       // Persist the refreshed token so the axios interceptor can read it
       // on all subsequent requests (e.g. after a page refresh).
       if (res.data?.token && res.data.token !== "undefined") {
         sessionStorage.setItem("jwt", res.data.token);
       }
+      set({ authUser: res.data });
       get().connectSocket();
     } catch (error) {
       console.log("Error in checkAuth:", error);
@@ -39,10 +39,10 @@ export const useAuthStore = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/signup", data);
-      set({ authUser: res.data });
       if (res.data?.token && res.data.token !== "undefined") {
         sessionStorage.setItem("jwt", res.data.token);
       }
+      set({ authUser: res.data });
       toast.success("Account created successfully");
       get().connectSocket();
     } catch (error) {
@@ -56,10 +56,10 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/auth/login", data);
-      set({ authUser: res.data });
       if (res.data?.token && res.data.token !== "undefined") {
         sessionStorage.setItem("jwt", res.data.token);
       }
+      set({ authUser: res.data });
       toast.success("Logged in successfully");
 
       get().connectSocket();
