@@ -7,6 +7,19 @@ const BASE_URL =
   import.meta.env.VITE_BACKEND_URL ||
   "https://backend-chat-application-kzkr.onrender.com";
 
+const getStoredToken = () => sessionStorage.getItem("jwt") || localStorage.getItem("jwt");
+
+const persistToken = (token) => {
+  if (!token || token === "undefined" || token === "null") return;
+  sessionStorage.setItem("jwt", token);
+  localStorage.setItem("jwt", token);
+};
+
+const clearToken = () => {
+  sessionStorage.removeItem("jwt");
+  localStorage.removeItem("jwt");
+};
+
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   isSigningUp: false,
@@ -17,14 +30,17 @@ export const useAuthStore = create((set, get) => ({
   socket: null,
 
   checkAuth: async () => {
+    if (!getStoredToken()) {
+      set({ authUser: null, isCheckingAuth: false });
+      return;
+    }
+
     try {
       const res = await axiosInstance.get("/auth/check");
 
       // Persist the refreshed token so the axios interceptor can read it
       // on all subsequent requests (e.g. after a page refresh).
-      if (res.data?.token && res.data.token !== "undefined") {
-        sessionStorage.setItem("jwt", res.data.token);
-      }
+      persistToken(res.data?.token);
       set({ authUser: res.data });
       get().connectSocket();
     } catch (error) {
@@ -39,9 +55,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/signup", data);
-      if (res.data?.token && res.data.token !== "undefined") {
-        sessionStorage.setItem("jwt", res.data.token);
-      }
+      persistToken(res.data?.token);
       set({ authUser: res.data });
       toast.success("Account created successfully");
       get().connectSocket();
@@ -56,9 +70,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/auth/login", data);
-      if (res.data?.token && res.data.token !== "undefined") {
-        sessionStorage.setItem("jwt", res.data.token);
-      }
+      persistToken(res.data?.token);
       set({ authUser: res.data });
       toast.success("Logged in successfully");
 
@@ -74,7 +86,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       await axiosInstance.post("/auth/logout");
       set({ authUser: null });
-      sessionStorage.removeItem("jwt");
+      clearToken();
       toast.success("Logged out successfully");
       get().disconnectSocket();
     } catch (error) {
@@ -187,7 +199,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       await axiosInstance.delete("/auth/delete-account");
       set({ authUser: null });
-      sessionStorage.removeItem("jwt");
+      clearToken();
       toast.success("Account deleted successfully");
       get().disconnectSocket();
     } catch (error) {
