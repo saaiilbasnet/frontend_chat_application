@@ -5,7 +5,7 @@ import { io } from "socket.io-client";
 
 const BASE_URL =
   import.meta.env.VITE_BACKEND_URL ||
-  "https://backend-chat-application-kzkr.onrender.com";
+  "";
 
 const getStoredToken = () => sessionStorage.getItem("jwt") || localStorage.getItem("jwt");
 
@@ -148,12 +148,24 @@ export const useAuthStore = create((set, get) => ({
     socket.on("newMessage", async (newMessage) => {
       const { useChatStore, useNotificationStore } = await getStores();
 
-      const { selectedUser, users } = useChatStore.getState();
+      const { selectedUser, users, getFriendState } = useChatStore.getState();
       const isMessageSentFromSelectedUser =
         selectedUser && newMessage.senderId === selectedUser._id;
 
       // Look up sender from cached users list
-      const sender = users.find((u) => u._id === newMessage.senderId);
+      let sender = users.find((u) => u._id === newMessage.senderId);
+      if (!sender) {
+        await getFriendState();
+        sender = useChatStore
+          .getState()
+          .users.find((u) => u._id === newMessage.senderId);
+      }
+
+      const fallbackSender = {
+        _id: newMessage.senderId,
+        fullName: sender?.fullName ?? "New message",
+        profilePic: sender?.profilePic || "/avatar.png",
+      };
       const notifBody = newMessage.image
         ? "📷 Sent an image"
         : newMessage.text ?? "";
@@ -163,19 +175,19 @@ export const useAuthStore = create((set, get) => ({
         useNotificationStore.getState().addNotification({
           id: newMessage._id,
           senderId: newMessage.senderId,
-          senderName: sender?.fullName ?? "Someone",
-          senderAvatar: sender?.profilePic || "/avatar.png",
+          senderName: fallbackSender.fullName,
+          senderAvatar: fallbackSender.profilePic,
           body: notifBody,
           timestamp: newMessage.createdAt ?? new Date().toISOString(),
-          user: sender ?? null,
+          user: sender ?? fallbackSender,
         });
       }
 
       // OS push notification — only when tab is hidden
       if (document.hidden && Notification.permission === "granted") {
-        const osNotif = new Notification(sender?.fullName ?? "New Message", {
+        const osNotif = new Notification(fallbackSender.fullName, {
           body: notifBody,
-          icon: sender?.profilePic || "/avatar.png",
+          icon: fallbackSender.profilePic,
           badge: "/avatar.png",
           tag: `msg-${newMessage.senderId}`,
           renotify: true,

@@ -13,7 +13,7 @@ const NotificationBell = () => {
   const navigate = useNavigate();
 
   const { notifications, clearAll, clearBySender } = useNotificationStore();
-  const { setSelectedUser } = useChatStore();
+  const { users, getFriendState, setSelectedUser } = useChatStore();
 
   const unreadCount = notifications.reduce((sum, n) => sum + (n.count ?? 1), 0);
 
@@ -27,11 +27,25 @@ const NotificationBell = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const handleNotificationClick = (notif) => {
-    if (notif.user) {
-      setSelectedUser(notif.user);
-      navigate("/");
+  const handleNotificationClick = async (notif) => {
+    let user = notif.user || users.find((item) => item._id === notif.senderId);
+
+    if (!user) {
+      await getFriendState();
+      user = useChatStore
+        .getState()
+        .users.find((item) => item._id === notif.senderId);
     }
+
+    setSelectedUser(
+      user || {
+        _id: notif.senderId,
+        fullName: notif.senderName || "New message",
+        profilePic: notif.senderAvatar || "/avatar.png",
+      },
+    );
+    clearBySender(notif.senderId);
+    navigate("/");
     setIsOpen(false);
   };
 
@@ -90,9 +104,17 @@ const NotificationBell = () => {
               <ul className="divide-y divide-base-300/40">
                 {[...notifications].reverse().map((notif) => (
                   <li key={notif.senderId}>
-                    <button
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-base-200/50 transition-colors text-left group"
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-base-200/50 transition-colors text-left group cursor-pointer"
                       onClick={() => handleNotificationClick(notif)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          handleNotificationClick(notif);
+                        }
+                      }}
                     >
                       {/* Avatar */}
                       <div className="relative flex-shrink-0">
@@ -128,7 +150,7 @@ const NotificationBell = () => {
                           <X className="size-2.5" />
                         </button>
                       </div>
-                    </button>
+                    </div>
                   </li>
                 ))}
               </ul>

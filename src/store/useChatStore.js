@@ -168,13 +168,13 @@ export const useChatStore = create((set, get) => ({
     }
   },
   sendMessage: async (messageData) => {
-    const { selectedUser, messages } = get();
+    const { selectedUser } = get();
     try {
       const res = await axiosInstance.post(
         `/messages/send/${selectedUser._id}`,
         messageData,
       );
-      set({ messages: [...messages, res.data] });
+      set((state) => ({ messages: [...state.messages, res.data] }));
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to send message");
     }
@@ -225,12 +225,18 @@ export const useChatStore = create((set, get) => ({
     if (!selectedUser) return;
 
     const socket = useAuthStore.getState().socket;
+    if (!socket) return;
 
     // Store handler reference so we can remove ONLY this listener later,
     // without touching the global newMessage listener in useAuthStore.
     const newMessageHandler = (newMessage) => {
       if (newMessage.senderId !== selectedUser._id) return;
-      set({ messages: [...get().messages, newMessage] });
+      set((state) => {
+        if (state.messages.some((message) => message._id === newMessage._id)) {
+          return state;
+        }
+        return { messages: [...state.messages, newMessage] };
+      });
     };
 
     const messageEditedHandler = (editedMessage) => {
@@ -262,6 +268,7 @@ export const useChatStore = create((set, get) => ({
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
     const { _messageHandler, _messageEditedHandler, _messageDeletedHandler } = get();
+    if (!socket) return;
     
     if (_messageHandler) socket.off("newMessage", _messageHandler);
     if (_messageEditedHandler) socket.off("messageEdited", _messageEditedHandler);
