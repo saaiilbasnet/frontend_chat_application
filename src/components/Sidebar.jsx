@@ -29,12 +29,13 @@ const Sidebar = () => {
     blockedUsers,
     selectedUser,
     setSelectedUser,
+    activeSidebarTab,
+    setActiveSidebarTab,
     isUsersLoading,
     isFriendsLoading,
     isSearchingUsers,
   } = useChatStore();
   const { onlineUsers } = useAuthStore();
-  const [activeTab, setActiveTab] = useState("friends");
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
@@ -43,14 +44,14 @@ const Sidebar = () => {
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      if (activeTab === "search") searchUsersByName(searchTerm);
+      if (activeSidebarTab === "search") searchUsersByName(searchTerm);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [activeTab, searchTerm, searchUsersByName]);
+  }, [activeSidebarTab, searchTerm, searchUsersByName]);
 
   const filteredUsers = (
-    activeTab === "online"
+    activeSidebarTab === "online"
       ? users.filter((user) => onlineUsers.includes(user._id))
       : users
   ).slice().sort((a, b) => {
@@ -73,7 +74,7 @@ const Sidebar = () => {
 
   const renderUserIdentity = (user, subtitle) => (
     <>
-      <div className="relative flex-shrink-0 mx-auto lg:mx-0">
+      <div className="relative flex-shrink-0">
         <img
           src={user.profilePic || "/avatar.png"}
           alt={user.fullName}
@@ -83,7 +84,7 @@ const Sidebar = () => {
           <span className="absolute bottom-0 right-0 size-2.5 bg-emerald-500 rounded-full ring-2 ring-base-100 pulse-dot" />
         )}
       </div>
-      <div className="hidden lg:block min-w-0 flex-1">
+      <div className="block min-w-0 flex-1">
         <p className="text-sm truncate font-medium">{user.fullName}</p>
         <p className="text-[10px] truncate text-base-content/40">{subtitle}</p>
       </div>
@@ -93,7 +94,7 @@ const Sidebar = () => {
   const renderRelationshipButton = (user) => {
     if (user.relationship === "friends") {
       return (
-        <span className="hidden lg:inline text-[10px] text-base-content/40">Friend</span>
+        <span className="text-[10px] text-base-content/40">Friend</span>
       );
     }
     if (user.relationship === "request_sent") {
@@ -134,22 +135,22 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="h-full w-16 lg:w-64 border-r border-base-300/60 flex flex-col transition-all duration-200 bg-base-100/30 backdrop-blur-md">
+    <aside className="h-full w-full md:w-72 lg:w-64 border-r border-base-300/60 flex flex-col transition-all duration-200 bg-base-100/30 backdrop-blur-md">
       {/* Header / Tabs */}
       <div className="p-3 border-b border-base-300/60 flex flex-col gap-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/40 hidden lg:block px-1">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-base-content/40 px-1">
           Chats
         </p>
 
-        <div className="hidden lg:grid grid-cols-4 gap-1 p-0.5 bg-base-200/60 rounded-xl border border-base-300/20">
+        <div className="grid grid-cols-4 gap-1 p-0.5 bg-base-200/60 rounded-xl border border-base-300/20">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setActiveSidebarTab(tab.id)}
                 className={`flex items-center justify-center gap-1 py-1.5 text-xs rounded-lg font-medium transition-all duration-150 press
-                  ${activeTab === tab.id
+                  ${activeSidebarTab === tab.id
                     ? "bg-base-100 text-base-content shadow-sm border border-base-300/20"
                     : "text-base-content/50 hover:text-base-content"
                   }`}
@@ -164,16 +165,12 @@ const Sidebar = () => {
           })}
         </div>
 
-        {/* Small collapsed indicator for mobile */}
-        <div className="lg:hidden flex justify-center py-1">
-          <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-        </div>
       </div>
 
       {/* User list */}
       <div className="overflow-y-auto flex-1 py-2 space-y-1">
-        {activeTab === "search" && (
-          <div className="hidden lg:block px-3 pb-2">
+        {activeSidebarTab === "search" && (
+          <div className="px-3 pb-2">
             <label className="relative block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-base-content/35" />
               <input
@@ -186,7 +183,7 @@ const Sidebar = () => {
           </div>
         )}
 
-        {(activeTab === "friends" || activeTab === "online") && filteredUsers.map((user) => {
+        {(activeSidebarTab === "friends" || activeSidebarTab === "online") && filteredUsers.map((user) => {
           const isOnline = onlineUsers.includes(user._id);
           const isSelected = selectedUser?._id === user._id;
 
@@ -201,7 +198,7 @@ const Sidebar = () => {
                 }`}
             >
               {/* Avatar Container */}
-              <div className="relative flex-shrink-0 mx-auto lg:mx-0">
+              <div className="relative flex-shrink-0">
                 <img
                   src={user.profilePic || "/avatar.png"}
                   alt={user.fullName}
@@ -214,7 +211,7 @@ const Sidebar = () => {
               </div>
 
               {/* User details — desktop only */}
-              <div className="hidden lg:block min-w-0 flex-1">
+              <div className="block min-w-0 flex-1">
                 <div className="flex items-center justify-between">
                   <p className={`text-sm truncate ${isSelected ? "text-primary font-semibold" : ""}`}>
                     {user.fullName}
@@ -228,10 +225,10 @@ const Sidebar = () => {
           );
         })}
 
-        {activeTab === "search" && (
+        {activeSidebarTab === "search" && (
           <div className="space-y-1">
             {isSearchingUsers && (
-              <p className="hidden lg:block text-center text-xs text-base-content/35 py-6">
+              <p className="text-center text-xs text-base-content/35 py-6">
                 Searching...
               </p>
             )}
@@ -241,7 +238,7 @@ const Sidebar = () => {
                 className="w-[calc(100%-16px)] px-3 py-2 flex items-center gap-3 rounded-xl mx-2 text-left text-base-content/75 hover:bg-base-200/50"
               >
                 {renderUserIdentity(user, user.email)}
-                <div className="hidden lg:flex items-center gap-1">
+                <div className="flex items-center gap-1">
                   {renderRelationshipButton(user)}
                   {user.relationship !== "blocked" && (
                     <button
@@ -258,7 +255,7 @@ const Sidebar = () => {
           </div>
         )}
 
-        {activeTab === "requests" && (
+        {activeSidebarTab === "requests" && (
           <div className="space-y-1">
             {receivedRequests.map((user) => (
               <div
@@ -266,7 +263,7 @@ const Sidebar = () => {
                 className="w-[calc(100%-16px)] px-3 py-2 flex items-center gap-3 rounded-xl mx-2 text-left text-base-content/75 hover:bg-base-200/50"
               >
                 {renderUserIdentity(user, "Wants to connect")}
-                <div className="hidden lg:flex items-center gap-1">
+                <div className="flex items-center gap-1">
                   <button
                     onClick={() => acceptFriendRequest(user._id)}
                     className="p-1.5 rounded-lg text-success hover:bg-success/10 press"
@@ -290,13 +287,13 @@ const Sidebar = () => {
                 className="w-[calc(100%-16px)] px-3 py-2 flex items-center gap-3 rounded-xl mx-2 text-left text-base-content/55"
               >
                 {renderUserIdentity(user, "Request sent")}
-                <Send className="hidden lg:block size-4 text-base-content/35" />
+                <Send className="size-4 text-base-content/35" />
               </div>
             ))}
           </div>
         )}
 
-        {activeTab === "blocked" && (
+        {activeSidebarTab === "blocked" && (
           <div className="space-y-1">
             {blockedUsers.map((user) => (
               <div
@@ -306,7 +303,7 @@ const Sidebar = () => {
                 {renderUserIdentity(user, "Blocked")}
                 <button
                   onClick={() => unblockUser(user._id)}
-                  className="hidden lg:block p-1.5 rounded-lg text-primary hover:bg-primary/10 press"
+                  className="p-1.5 rounded-lg text-primary hover:bg-primary/10 press"
                   title="Unblock"
                 >
                   <ShieldOff className="size-4" />
@@ -316,23 +313,23 @@ const Sidebar = () => {
           </div>
         )}
 
-        {activeTab !== "search" && activeTab !== "requests" && activeTab !== "blocked" && filteredUsers.length === 0 && (
-          <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed hidden lg:block">
-            {activeTab === "online" ? "No contacts are active" : "Your contact list is empty"}
+        {activeSidebarTab !== "search" && activeSidebarTab !== "requests" && activeSidebarTab !== "blocked" && filteredUsers.length === 0 && (
+          <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed">
+            {activeSidebarTab === "online" ? "No contacts are active" : "Your contact list is empty"}
           </div>
         )}
-        {activeTab === "search" && searchTerm.trim().length >= 2 && !isSearchingUsers && searchResults.length === 0 && (
-          <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed hidden lg:block">
+        {activeSidebarTab === "search" && searchTerm.trim().length >= 2 && !isSearchingUsers && searchResults.length === 0 && (
+          <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed">
             No users found
           </div>
         )}
-        {activeTab === "requests" && receivedRequests.length + sentRequests.length === 0 && (
-          <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed hidden lg:block">
+        {activeSidebarTab === "requests" && receivedRequests.length + sentRequests.length === 0 && (
+          <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed">
             No pending requests
           </div>
         )}
-        {activeTab === "blocked" && blockedUsers.length === 0 && (
-          <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed hidden lg:block">
+        {activeSidebarTab === "blocked" && blockedUsers.length === 0 && (
+          <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed">
             No blocked users
           </div>
         )}

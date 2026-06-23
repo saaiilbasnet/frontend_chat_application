@@ -68,7 +68,7 @@ const ChatContainer = () => {
 
   if (isMessagesLoading) {
     return (
-      <div className="flex-1 flex flex-col overflow-auto bg-transparent">
+      <div className="flex-1 min-w-0 flex flex-col overflow-auto bg-transparent">
         <ChatHeader />
         <MessageSkeleton />
         <MessageInput />
@@ -77,11 +77,11 @@ const ChatContainer = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-auto bg-transparent">
+    <div className="flex-1 min-w-0 flex flex-col overflow-auto bg-transparent">
       <ChatHeader />
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 space-y-1">
         {messages.map((message, index) => {
           const isMine = message.senderId === authUser._id;
           const prevMsg = messages[index - 1];
@@ -119,7 +119,7 @@ const ChatContainer = () => {
               </div>
 
               {/* Message bubble + actions */}
-              <div className={`flex items-end gap-2 max-w-[70%] ${isMine ? "flex-row-reverse" : "flex-row"}`}>
+              <div className={`flex items-end gap-2 max-w-[82%] sm:max-w-[70%] min-w-0 ${isMine ? "flex-row-reverse" : "flex-row"}`}>
                 {/* Actions — visible on hover, only for own messages */}
                 {isMine && editingMessageId !== message._id && (
                   <div className="opacity-0 group-hover:opacity-100 transition-all duration-150 flex items-center gap-1 mb-1 scale-90 origin-right">
@@ -140,7 +140,7 @@ const ChatContainer = () => {
                   </div>
                 )}
 
-                <div className="flex flex-col">
+                <div className="flex flex-col min-w-0">
                   {/* Bubble */}
                   <div
                     className={`rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm transition-all
@@ -189,7 +189,7 @@ const ChatContainer = () => {
                         </button>
                       </form>
                     ) : (
-                      message.text && <p className="whitespace-pre-wrap">{message.text}</p>
+                      message.text && <p className="whitespace-pre-wrap break-words">{message.text}</p>
                     )}
                   </div>
 

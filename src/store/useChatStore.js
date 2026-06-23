@@ -13,6 +13,7 @@ export const useChatStore = create((set, get) => ({
   receivedRequests: [],
   blockedUsers: [],
   selectedUser: null,
+  activeSidebarTab: "friends",
   isUsersLoading: false,
   isMessagesLoading: false,
   isFriendsLoading: false,
@@ -290,4 +291,6 @@ export const useChatStore = create((set, get) => ({
     }
     set({ selectedUser });
   },
+
+  setActiveSidebarTab: (activeSidebarTab) => set({ activeSidebarTab }),
 }));

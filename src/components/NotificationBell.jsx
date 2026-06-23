@@ -13,7 +13,7 @@ const NotificationBell = () => {
   const navigate = useNavigate();
 
   const { notifications, clearAll, clearBySender } = useNotificationStore();
-  const { users, getFriendState, setSelectedUser } = useChatStore();
+  const { users, getFriendState, setSelectedUser, setActiveSidebarTab } = useChatStore();
 
   const unreadCount = notifications.reduce((sum, n) => sum + (n.count ?? 1), 0);
 
@@ -37,13 +37,19 @@ const NotificationBell = () => {
         .users.find((item) => item._id === notif.senderId);
     }
 
-    setSelectedUser(
-      user || {
-        _id: notif.senderId,
-        fullName: notif.senderName || "New message",
-        profilePic: notif.senderAvatar || "/avatar.png",
-      },
-    );
+    if (notif.type === "friend_request") {
+      setSelectedUser(null);
+      setActiveSidebarTab("requests");
+    } else {
+      setSelectedUser(
+        user || {
+          _id: notif.senderId,
+          fullName: notif.senderName || "New message",
+          profilePic: notif.senderAvatar || "/avatar.png",
+        },
+      );
+      setActiveSidebarTab("friends");
+    }
     clearBySender(notif.senderId);
     navigate("/");
     setIsOpen(false);

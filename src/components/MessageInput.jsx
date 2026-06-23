@@ -47,7 +47,7 @@ const MessageInput = () => {
   const canSend = (text.trim() || imagePreview) && !isSending;
 
   return (
-    <div className="px-4 py-3 border-t border-base-300/60 bg-transparent">
+    <div className="px-3 sm:px-4 py-3 border-t border-base-300/60 bg-transparent">
       {/* Image preview */}
       {imagePreview && (
         <div className="mb-2.5 inline-flex items-start relative animate-fade-up">
@@ -91,7 +91,7 @@ const MessageInput = () => {
         {/* Text input */}
         <input
           type="text"
-          className="flex-1 bg-base-200/60 border border-base-300/60 rounded-xl px-4 py-2.5 text-sm placeholder:text-base-content/30 focus:outline-none focus:border-primary/50 focus:bg-base-200/80 transition-all duration-150"
+          className="flex-1 min-w-0 bg-base-200/60 border border-base-300/60 rounded-xl px-4 py-2.5 text-sm placeholder:text-base-content/30 focus:outline-none focus:border-primary/50 focus:bg-base-200/80 transition-all duration-150"
           placeholder="Type a message…"
           value={text}
           onChange={(e) => setText(e.target.value)}

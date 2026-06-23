@@ -14,8 +14,12 @@ export const useNotificationStore = create((set, get) => ({
 
     // If there's already a notification from this sender, replace it
     // (we just bump the count instead of stacking duplicates)
+    const notificationType = notification.type ?? "message";
+    const existingNotification = existing.find(
+      (n) => n.senderId === notification.senderId && (n.type ?? "message") === notificationType
+    );
     const filtered = existing.filter(
-      (n) => n.senderId !== notification.senderId
+      (n) => n.senderId !== notification.senderId || (n.type ?? "message") !== notificationType
     );
 
     set({
@@ -23,9 +27,8 @@ export const useNotificationStore = create((set, get) => ({
         ...filtered,
         {
           ...notification,
-          count:
-            (existing.find((n) => n.senderId === notification.senderId)
-              ?.count ?? 0) + 1,
+          type: notificationType,
+          count: (existingNotification?.count ?? 0) + 1,
         },
       ],
     });

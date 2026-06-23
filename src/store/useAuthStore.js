@@ -174,6 +174,7 @@ export const useAuthStore = create((set, get) => ({
       if (!isMessageSentFromSelectedUser) {
         useNotificationStore.getState().addNotification({
           id: newMessage._id,
+          type: "message",
           senderId: newMessage.senderId,
           senderName: fallbackSender.fullName,
           senderAvatar: fallbackSender.profilePic,
@@ -197,6 +198,38 @@ export const useAuthStore = create((set, get) => ({
           osNotif.close();
         };
       }
+    });
+
+    socket.on("friendRequestReceived", async ({ user }) => {
+      const { useChatStore, useNotificationStore } = await getStores();
+
+      await useChatStore.getState().getFriendState();
+      useNotificationStore.getState().addNotification({
+        id: `friend-request-${user._id}`,
+        type: "friend_request",
+        senderId: user._id,
+        senderName: user.fullName ?? "New request",
+        senderAvatar: user.profilePic || "/avatar.png",
+        body: "Sent you a friend request",
+        timestamp: new Date().toISOString(),
+        user,
+      });
+    });
+
+    socket.on("friendRequestAccepted", async ({ user }) => {
+      const { useChatStore, useNotificationStore } = await getStores();
+
+      await useChatStore.getState().getFriendState();
+      useNotificationStore.getState().addNotification({
+        id: `friend-accepted-${user._id}`,
+        type: "friend_accept",
+        senderId: user._id,
+        senderName: user.fullName ?? "Friend request accepted",
+        senderAvatar: user.profilePic || "/avatar.png",
+        body: "Accepted your friend request",
+        timestamp: new Date().toISOString(),
+        user,
+      });
     });
 
     // Request browser notification permission once the user is authenticated

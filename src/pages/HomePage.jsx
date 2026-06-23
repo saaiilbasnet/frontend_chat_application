@@ -20,11 +20,15 @@ const HomePage = () => {
       <div className="absolute top-1/4 left-1/3 w-[30rem] h-[30rem] bg-primary/5 rounded-full blur-[100px] pointer-events-none animate-pulse-slow" />
 
       {/* Main Container */}
-      <div className="w-full max-w-6xl h-[calc(100vh-6.5rem)] px-4 z-10">
-        <div className="bg-base-100/75 border border-base-300/60 backdrop-blur-xl h-full rounded-2xl shadow-2xl overflow-hidden">
+      <div className="w-full max-w-6xl h-[calc(100vh-3.5rem)] md:h-[calc(100vh-6.5rem)] md:px-4 z-10">
+        <div className="bg-base-100/75 border-y md:border border-base-300/60 backdrop-blur-xl h-full md:rounded-2xl shadow-2xl overflow-hidden">
           <div className="flex h-full">
-            <Sidebar />
-            {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
+            <div className={`${selectedUser ? "hidden md:flex" : "flex"} h-full w-full md:w-auto`}>
+              <Sidebar />
+            </div>
+            <div className={`${selectedUser ? "flex" : "hidden md:flex"} flex-1 min-w-0`}>
+              {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
+            </div>
           </div>
         </div>
       </div>
