@@ -26,6 +26,8 @@ export const useAuthStore = create((set, get) => ({
   isLoggingIn: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
+  requireOtp: false,
+  signupEmail: null,
   onlineUsers: [],
   socket: null,
 
@@ -56,14 +58,48 @@ export const useAuthStore = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/signup", data);
-      persistToken(res.data?.token);
-      set({ authUser: res.data });
-      toast.success("Account created successfully");
-      get().connectSocket();
+      if (res.data.requireOtp) {
+        set({ requireOtp: true, signupEmail: res.data.email });
+        toast.success(res.data.message || "OTP sent to email");
+      } else {
+        persistToken(res.data?.token);
+        set({ authUser: res.data });
+        toast.success("Account created successfully");
+        get().connectSocket();
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "An error occurred during signup");
     } finally {
       set({ isSigningUp: false });
+    }
+  },
+
+  verifyOtp: async (otp) => {
+    set({ isSigningUp: true });
+    try {
+      const { signupEmail } = get();
+      const res = await axiosInstance.post("/auth/verify-otp", { email: signupEmail, otp });
+      set({ requireOtp: false, signupEmail: null });
+      persistToken(res.data?.token);
+      set({ authUser: res.data });
+      toast.success("Account verified successfully");
+      get().connectSocket();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Invalid OTP");
+    } finally {
+      set({ isSigningUp: false });
+    }
+  },
+
+  resendOtp: async () => {
+    try {
+      const { signupEmail } = get();
+      const res = await axiosInstance.post("/auth/resend-otp", { email: signupEmail });
+      toast.success(res.data.message || "OTP resent successfully");
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to resend OTP");
+      throw error;
     }
   },
 

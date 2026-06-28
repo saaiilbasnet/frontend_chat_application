@@ -1,10 +1,14 @@
 import { useEffect, useState } from "react";
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from "../store/useAuthStore";
+import { useGroupStore } from "../store/useGroupStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
+import CreateGroupModal from "./CreateGroupModal";
 import {
   Ban,
   Check,
+  Hash,
+  Plus,
   Search,
   Send,
   ShieldOff,
@@ -36,11 +40,14 @@ const Sidebar = () => {
     isSearchingUsers,
   } = useChatStore();
   const { onlineUsers } = useAuthStore();
+  const { groups, fetchGroups, selectGroup } = useGroupStore();
   const [searchTerm, setSearchTerm] = useState("");
+  const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
 
   useEffect(() => {
     getFriendState();
-  }, [getFriendState]);
+    fetchGroups();
+  }, [getFriendState, fetchGroups]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -70,6 +77,7 @@ const Sidebar = () => {
     { id: "search", label: "Search", icon: Search },
     { id: "requests", label: "Requests", icon: UserPlus, count: requestCount },
     { id: "blocked", label: "Blocked", icon: Ban, count: blockedUsers.length },
+    { id: "groups", label: "Groups", icon: Hash, count: groups.length },
   ];
 
   const renderUserIdentity = (user, subtitle) => (
@@ -142,7 +150,7 @@ const Sidebar = () => {
           Chats
         </p>
 
-        <div className="grid grid-cols-4 gap-1 p-0.5 bg-base-200/60 rounded-xl border border-base-300/20">
+        <div className="grid grid-cols-5 gap-1 p-0.5 bg-base-200/60 rounded-xl border border-base-300/20">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             return (
@@ -313,7 +321,56 @@ const Sidebar = () => {
           </div>
         )}
 
-        {activeSidebarTab !== "search" && activeSidebarTab !== "requests" && activeSidebarTab !== "blocked" && filteredUsers.length === 0 && (
+        {/* Groups tab content */}
+        {activeSidebarTab === "groups" && (
+          <div className="space-y-1">
+            {/* New Group button */}
+            <button
+              onClick={() => setIsCreateGroupOpen(true)}
+              className="w-[calc(100%-16px)] mx-2 px-3 py-2 flex items-center gap-3 rounded-xl text-left text-primary hover:bg-primary/8 border border-primary/10 transition-all duration-150 press"
+            >
+              <div className="size-9 rounded-full bg-primary/15 flex items-center justify-center flex-shrink-0">
+                <Plus className="size-4 text-primary" />
+              </div>
+              <div className="block min-w-0 flex-1">
+                <p className="text-sm font-medium">New Group</p>
+                <p className="text-[10px] text-base-content/40">Create a group chat</p>
+              </div>
+            </button>
+
+            {groups.map((group) => {
+              const isSelected = false; // groups don't set selectedUser
+              return (
+                <button
+                  key={group._id}
+                  onClick={() => {
+                    selectGroup(group);
+                    setSelectedUser(null);
+                  }}
+                  className="w-[calc(100%-16px)] px-3 py-2 flex items-center gap-3 transition-all duration-150 press rounded-xl mx-2 text-left group text-base-content/75 hover:bg-base-200/50 hover:text-base-content"
+                >
+                  <div className="size-9 rounded-full bg-base-200 flex items-center justify-center flex-shrink-0 ring-1 ring-base-300/30 group-hover:ring-base-300/60 transition-all">
+                    <Hash className="size-4 text-base-content/40" />
+                  </div>
+                  <div className="block min-w-0 flex-1">
+                    <p className="text-sm truncate font-medium">{group.name}</p>
+                    <p className="text-[10px] truncate text-base-content/40">
+                      {group.members?.length ?? 0} member{(group.members?.length ?? 0) !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
+
+            {groups.length === 0 && (
+              <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed">
+                No groups yet — create one!
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeSidebarTab !== "search" && activeSidebarTab !== "requests" && activeSidebarTab !== "blocked" && activeSidebarTab !== "groups" && filteredUsers.length === 0 && (
           <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed">
             {activeSidebarTab === "online" ? "No contacts are active" : "Your contact list is empty"}
           </div>
@@ -334,6 +391,11 @@ const Sidebar = () => {
           </div>
         )}
       </div>
+
+      <CreateGroupModal
+        isOpen={isCreateGroupOpen}
+        onClose={() => setIsCreateGroupOpen(false)}
+      />
     </aside>
   );
 };

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -15,7 +15,31 @@ const SignUpPage = () => {
     confirmPassword: "",
   });
 
-  const { signup, isSigningUp } = useAuthStore();
+  const { signup, verifyOtp, resendOtp, isSigningUp, requireOtp, signupEmail } = useAuthStore();
+  const [otp, setOtp] = useState("");
+  const [resendTimer, setResendTimer] = useState(30);
+
+  useEffect(() => {
+    let interval;
+    if (requireOtp && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [requireOtp, resendTimer]);
+
+  const handleResendOtp = async () => {
+    if (resendTimer > 0) return;
+    try {
+      await resendOtp();
+      setResendTimer((prev) => (prev < 120 ? 120 : 300));
+    } catch (error) {
+      if (error.response?.data?.remainingSeconds) {
+        setResendTimer(error.response.data.remainingSeconds);
+      }
+    }
+  };
 
   const validateForm = () => {
     if (!formData.fullName.trim()) return toast.error("Full name is required");
@@ -32,7 +56,12 @@ const SignUpPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (validateForm() === true) signup(formData);
+    if (requireOtp) {
+      if (!otp.trim() || otp.length !== 6) return toast.error("Please enter a valid 6-digit OTP");
+      verifyOtp(otp);
+    } else {
+      if (validateForm() === true) signup(formData);
+    }
   };
 
   const set = (key) => (e) => setFormData({ ...formData, [key]: e.target.value });
@@ -44,53 +73,68 @@ const SignUpPage = () => {
         <div className="w-full max-w-sm space-y-7 animate-fade-up">
           {/* Header */}
           <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
-            <p className="text-sm text-base-content/50">Get started with Zeno — it&apos;s free</p>
+            <h1 className="text-2xl font-semibold tracking-tight">{requireOtp ? "Verify Email" : "Create an account"}</h1>
+            <p className="text-sm text-base-content/50">{requireOtp ? `We sent an OTP to ${signupEmail}` : "Get started with Zeno — it's free"}</p>
           </div>
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Field label="Full name" icon={<User className="size-4" />}>
-              <input
-                type="text"
-                className="auth-input pl-9"
-                placeholder="Jane Doe"
-                value={formData.fullName}
-                onChange={set("fullName")}
-              />
-            </Field>
+            {requireOtp ? (
+              <Field label="Verification Code (OTP)" icon={<Lock className="size-4" />}>
+                <input
+                  type="text"
+                  className="auth-input pl-9"
+                  placeholder="123456"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  maxLength={6}
+                />
+              </Field>
+            ) : (
+              <>
+                <Field label="Full name" icon={<User className="size-4" />}>
+                  <input
+                    type="text"
+                    className="auth-input pl-9"
+                    placeholder="Jane Doe"
+                    value={formData.fullName}
+                    onChange={set("fullName")}
+                  />
+                </Field>
 
-            <Field label="Email" icon={<Mail className="size-4" />}>
-              <input
-                type="email"
-                className="auth-input pl-9"
-                placeholder="you@example.com"
-                value={formData.email}
-                onChange={set("email")}
-              />
-            </Field>
+                <Field label="Email" icon={<Mail className="size-4" />}>
+                  <input
+                    type="email"
+                    className="auth-input pl-9"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={set("email")}
+                  />
+                </Field>
 
-            <Field label="Password" icon={<Lock className="size-4" />}>
-              <input
-                type={showPassword ? "text" : "password"}
-                className="auth-input pl-9 pr-9"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={set("password")}
-              />
-              <EyeToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
-            </Field>
+                <Field label="Password" icon={<Lock className="size-4" />}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="auth-input pl-9 pr-9"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={set("password")}
+                  />
+                  <EyeToggle show={showPassword} onToggle={() => setShowPassword((v) => !v)} />
+                </Field>
 
-            <Field label="Confirm password" icon={<Lock className="size-4" />}>
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                className="auth-input pl-9 pr-9"
-                placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={set("confirmPassword")}
-              />
-              <EyeToggle show={showConfirmPassword} onToggle={() => setShowConfirmPassword((v) => !v)} />
-            </Field>
+                <Field label="Confirm password" icon={<Lock className="size-4" />}>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    className="auth-input pl-9 pr-9"
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={set("confirmPassword")}
+                  />
+                  <EyeToggle show={showConfirmPassword} onToggle={() => setShowConfirmPassword((v) => !v)} />
+                </Field>
+              </>
+            )}
 
             <button
               type="submit"
@@ -98,17 +142,32 @@ const SignUpPage = () => {
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-primary text-primary-content text-sm font-medium hover:brightness-105 transition-all press disabled:opacity-60"
             >
               {isSigningUp ? (
-                <><Loader2 className="size-4 animate-spin" /> Creating account…</>
-              ) : "Create account"}
+                <><Loader2 className="size-4 animate-spin" /> {requireOtp ? "Verifying..." : "Creating account…"}</>
+              ) : (requireOtp ? "Verify OTP" : "Create account")}
             </button>
           </form>
 
-          <p className="text-sm text-base-content/50 text-center">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary font-medium hover:underline">
-              Sign in
-            </Link>
-          </p>
+          {requireOtp && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={resendTimer > 0}
+                className="text-sm font-medium text-base-content/70 hover:text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {resendTimer > 0 ? `Resend OTP in ${resendTimer}s` : "Didn't receive code? Resend OTP"}
+              </button>
+            </div>
+          )}
+
+          {!requireOtp && (
+            <p className="text-sm text-base-content/50 text-center">
+              Already have an account?{" "}
+              <Link to="/login" className="text-primary font-medium hover:underline">
+                Sign in
+              </Link>
+            </p>
+          )}
         </div>
       </div>
 
