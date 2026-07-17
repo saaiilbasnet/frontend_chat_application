@@ -85,8 +85,10 @@ export const useAuthStore = create((set, get) => ({
       set({ authUser: res.data });
       toast.success("Account verified successfully");
       get().connectSocket();
+      return res.data;
     } catch (error) {
       toast.error(error.response?.data?.message || "Invalid OTP");
+      throw error;
     } finally {
       set({ isSigningUp: false });
     }

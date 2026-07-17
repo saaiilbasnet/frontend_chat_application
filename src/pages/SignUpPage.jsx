@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { Eye, EyeOff, Loader2, Lock, Mail, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AuthImagePattern from "../components/AuthImagePattern";
 import toast from "react-hot-toast";
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -54,13 +55,14 @@ const SignUpPage = () => {
     return true;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (requireOtp) {
       if (!otp.trim() || otp.length !== 6) return toast.error("Please enter a valid 6-digit OTP");
-      verifyOtp(otp);
+      await verifyOtp(otp);
+      navigate("/", { replace: true });
     } else {
-      if (validateForm() === true) signup(formData);
+      if (validateForm() === true) await signup(formData);
     }
   };
 
