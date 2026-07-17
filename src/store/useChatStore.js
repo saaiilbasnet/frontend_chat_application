@@ -3,8 +3,6 @@ import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
 
-const hasStoredToken = () => Boolean(sessionStorage.getItem("jwt") || localStorage.getItem("jwt"));
-
 export const useChatStore = create((set, get) => ({
   messages: [],
   users: [],
@@ -32,7 +30,7 @@ export const useChatStore = create((set, get) => ({
   },
 
   getFriendState: async () => {
-    if (!hasStoredToken()) {
+    if (!useAuthStore.getState().authUser) {
       set({
         users: [],
         sentRequests: [],
@@ -61,7 +59,7 @@ export const useChatStore = create((set, get) => ({
 
   searchUsersByName: async (fullName) => {
     const query = fullName.trim();
-    if (query.length < 2 || !hasStoredToken()) {
+    if (query.length < 2 || !useAuthStore.getState().authUser) {
       set({ searchResults: [] });
       return;
     }

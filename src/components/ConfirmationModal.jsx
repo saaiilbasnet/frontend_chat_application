@@ -16,7 +16,7 @@ const ConfirmationModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-up">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"

@@ -7,19 +7,6 @@ const BASE_URL =
   import.meta.env.VITE_BACKEND_URL ||
   "";
 
-const getStoredToken = () => sessionStorage.getItem("jwt") || localStorage.getItem("jwt");
-
-const persistToken = (token) => {
-  if (!token || token === "undefined" || token === "null") return;
-  sessionStorage.setItem("jwt", token);
-  localStorage.setItem("jwt", token);
-};
-
-const clearToken = () => {
-  sessionStorage.removeItem("jwt");
-  localStorage.removeItem("jwt");
-};
-
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   isSigningUp: false,
@@ -33,22 +20,11 @@ export const useAuthStore = create((set, get) => ({
   socket: null,
 
   checkAuth: async () => {
-    if (!getStoredToken()) {
-      set({ authUser: null, isCheckingAuth: false });
-      return;
-    }
-
     try {
       const res = await axiosInstance.get("/auth/check");
-
-      // Persist the refreshed token so the axios interceptor can read it
-      // on all subsequent requests (e.g. after a page refresh).
-      persistToken(res.data?.token);
       set({ authUser: res.data });
       get().connectSocket();
-    } catch (error) {
-      console.log("Error in checkAuth:", error);
-      clearToken();
+    } catch {
       set({ authUser: null });
     } finally {
       set({ isCheckingAuth: false });
@@ -63,7 +39,6 @@ export const useAuthStore = create((set, get) => ({
         set({ requireOtp: true, signupEmail: res.data.email });
         toast.success(res.data.message || "OTP sent to email");
       } else {
-        persistToken(res.data?.token);
         set({ authUser: res.data });
         toast.success("Account created successfully");
         get().connectSocket();
@@ -81,7 +56,6 @@ export const useAuthStore = create((set, get) => ({
       const { signupEmail } = get();
       const res = await axiosInstance.post("/auth/verify-otp", { email: signupEmail, otp });
       set({ requireOtp: false, signupEmail: null });
-      persistToken(res.data?.token);
       set({ authUser: res.data });
       toast.success("Account verified successfully");
       get().connectSocket();
@@ -124,6 +98,8 @@ export const useAuthStore = create((set, get) => ({
     set({ isResettingPassword: true });
     try {
       const res = await axiosInstance.post("/auth/reset-password", { email, otp, password });
+      set({ authUser: res.data });
+      get().connectSocket();
       toast.success(res.data.message || "Password reset successfully");
       return res.data;
     } catch (error) {
@@ -138,7 +114,6 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/auth/login", data);
-      persistToken(res.data?.token);
       set({ authUser: res.data });
       toast.success("Logged in successfully");
 
@@ -154,7 +129,6 @@ export const useAuthStore = create((set, get) => ({
     try {
       await axiosInstance.post("/auth/logout");
       set({ authUser: null });
-      clearToken();
       toast.success("Logged out successfully");
       get().disconnectSocket();
     } catch (error) {
@@ -169,7 +143,6 @@ export const useAuthStore = create((set, get) => ({
       set({ authUser: res.data });
       toast.success("Profile updated successfully");
     } catch (error) {
-      console.log("error in update profile:", error);
       toast.error(error.response?.data?.message || "Failed to update profile");
     } finally {
       set({ isUpdatingProfile: false });
@@ -181,9 +154,7 @@ export const useAuthStore = create((set, get) => ({
     if (!authUser || get().socket?.connected) return;
 
     const socket = io(BASE_URL, {
-      query: {
-        userId: authUser._id,
-      },
+      withCredentials: true,
     });
     socket.connect();
 
@@ -233,9 +204,7 @@ export const useAuthStore = create((set, get) => ({
         fullName: sender?.fullName ?? "New message",
         profilePic: sender?.profilePic || "/avatar.png",
       };
-      const notifBody = newMessage.image
-        ? "📷 Sent an image"
-        : newMessage.text ?? "";
+      const notifBody = newMessage.image ? "Sent an image" : newMessage.text ?? "";
 
       // In-app bell — always fire for non-active conversations
       if (!isMessageSentFromSelectedUser) {
@@ -312,7 +281,6 @@ export const useAuthStore = create((set, get) => ({
     try {
       await axiosInstance.delete("/auth/delete-account");
       set({ authUser: null });
-      clearToken();
       toast.success("Account deleted successfully");
       get().disconnectSocket();
     } catch (error) {

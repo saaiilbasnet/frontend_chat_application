@@ -66,6 +66,7 @@ const NotificationBell = () => {
       <button
         onClick={() => setIsOpen((v) => !v)}
         aria-label="Notifications"
+        aria-expanded={isOpen}
         className="relative flex items-center justify-center p-2 rounded-lg text-base-content/60 hover:text-base-content hover:bg-base-200 transition-all duration-150 press"
       >
         <Bell className="size-4" />
@@ -92,6 +93,7 @@ const NotificationBell = () => {
             {notifications.length > 0 && (
               <button
                 onClick={clearAll}
+                aria-label="Clear all notifications"
                 className="text-[10px] font-semibold text-base-content/40 hover:text-error transition-colors press"
               >
                 Clear all
@@ -150,6 +152,7 @@ const NotificationBell = () => {
                             e.stopPropagation();
                             clearBySender(notif.senderId);
                           }}
+                          aria-label={`Dismiss notification from ${notif.senderName}`}
                           className="p-1 rounded bg-transparent hover:bg-error/10 text-base-content/30 hover:text-error transition-all duration-100 press"
                           title="Dismiss notification"
                         >

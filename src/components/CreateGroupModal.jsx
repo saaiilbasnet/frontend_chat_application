@@ -43,7 +43,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fade-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-up">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
@@ -67,6 +67,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
             type="button"
             onClick={onClose}
             disabled={isSubmitting}
+            aria-label="Close group dialog"
             className="p-2 rounded-xl text-base-content/40 hover:text-base-content hover:bg-base-200/80 transition-all duration-150 press"
           >
             <X className="size-4" />
@@ -81,6 +82,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
               Group Name <span className="text-error">*</span>
             </label>
             <input
+              id="group-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -97,6 +99,7 @@ const CreateGroupModal = ({ isOpen, onClose }) => {
               Description <span className="text-base-content/30 font-normal normal-case">(optional)</span>
             </label>
             <input
+              id="group-description"
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}

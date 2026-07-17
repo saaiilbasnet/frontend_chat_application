@@ -18,6 +18,10 @@ const GroupMessageInput = () => {
       toast.error("Please select an image file");
       return;
     }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be 5MB or smaller");
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result);
     reader.readAsDataURL(file);
@@ -42,8 +46,8 @@ const GroupMessageInput = () => {
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
-    } catch (error) {
-      console.error("Failed to send group message:", error);
+    } catch {
+      toast.error("Failed to send group message");
     } finally {
       setIsSending(false);
     }
@@ -64,6 +68,7 @@ const GroupMessageInput = () => {
           <button
             onClick={removeImage}
             type="button"
+            aria-label="Remove selected image"
             className="absolute -top-1.5 -right-1.5 size-5 rounded-full bg-base-content text-base-100 flex items-center justify-center shadow-md hover:scale-105 transition-transform press"
           >
             <X className="size-3" />
@@ -77,6 +82,7 @@ const GroupMessageInput = () => {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
+          aria-label="Attach image"
           className={`flex size-10 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-150 press border border-transparent
             ${imagePreview
               ? "text-primary bg-primary/10 border-primary/20"
@@ -98,6 +104,7 @@ const GroupMessageInput = () => {
           type="text"
           className="h-10 flex-1 min-w-0 bg-transparent px-2 text-sm placeholder:text-base-content/35 focus:outline-none"
           placeholder="Message the group…"
+          aria-label="Group message text"
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
@@ -106,6 +113,7 @@ const GroupMessageInput = () => {
         <button
           type="submit"
           disabled={!canSend}
+          aria-label={isSending ? "Sending group message" : "Send group message"}
           className={`flex size-10 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-150 press
             ${canSend
               ? "bg-primary text-primary-content shadow-md hover:brightness-105 hover:shadow-lg hover:shadow-primary/10"

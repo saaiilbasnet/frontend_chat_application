@@ -14,9 +14,6 @@ const AuthImagePattern = ({ title, subtitle }) => {
         }}
       />
 
-      {/* Soft accent blob */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-primary/8 rounded-full blur-3xl pointer-events-none" />
-
       {/* Content */}
       <div className="relative max-w-xs text-center space-y-3 animate-fade-up">
         {/* Small Zeno wordmark */}

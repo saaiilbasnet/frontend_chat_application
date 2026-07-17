@@ -338,9 +338,7 @@ const Sidebar = () => {
               </div>
             </button>
 
-            {groups.map((group) => {
-              const isSelected = false; // groups don't set selectedUser
-              return (
+            {groups.map((group) => (
                 <button
                   key={group._id}
                   onClick={() => {
@@ -359,8 +357,7 @@ const Sidebar = () => {
                     </p>
                   </div>
                 </button>
-              );
-            })}
+            ))}
 
             {groups.length === 0 && (
               <div className="text-center text-base-content/30 text-xs py-8 px-4 leading-relaxed">

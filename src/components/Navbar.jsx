@@ -58,6 +58,7 @@ const Navbar = () => {
 
                 <button
                   onClick={() => setIsLogoutModalOpen(true)}
+                  aria-label="Log out"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-base-content/60 hover:text-error hover:bg-error/8 transition-all duration-150 press"
                 >
                   <LogOut className="w-4 h-4" />
@@ -87,6 +88,8 @@ const Navbar = () => {
 const NavBtn = ({ icon, label, active, onClick }) => (
   <button
     onClick={onClick}
+    aria-label={label}
+    aria-pressed={active}
     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm transition-all duration-150 press
       ${active
         ? "bg-primary/12 text-primary font-medium"

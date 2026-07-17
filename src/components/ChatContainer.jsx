@@ -124,9 +124,10 @@ const ChatContainer = () => {
               <div className={`flex items-end gap-1 sm:gap-2 max-w-[86%] sm:max-w-[70%] min-w-0 ${isMine ? "flex-row-reverse" : "flex-row"}`}>
                 {/* Actions — visible on hover, only for own messages */}
                 {isMine && editingMessageId !== message._id && (
-                  <div className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-all duration-150 items-center gap-1 mb-1 scale-90 origin-right">
+                  <div className="flex sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100 transition-all duration-150 items-center gap-1 mb-1 sm:scale-90 origin-right">
                     <button
                       onClick={() => startEdit(message)}
+                      aria-label="Edit message"
                       className="p-1.5 rounded-lg text-base-content/40 hover:text-base-content hover:bg-base-200/80 border border-base-300/10 backdrop-blur-sm transition-all duration-100 press"
                       title="Edit message"
                     >
@@ -134,6 +135,7 @@ const ChatContainer = () => {
                     </button>
                     <button
                       onClick={() => handleDelete(message._id)}
+                      aria-label="Delete message"
                       className="p-1.5 rounded-lg text-base-content/40 hover:text-error hover:bg-error/10 border border-base-300/10 backdrop-blur-sm transition-all duration-100 press"
                       title="Delete message"
                     >
@@ -224,6 +226,7 @@ const ChatContainer = () => {
           <button
             className="absolute top-4 right-4 p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors press"
             onClick={() => setSelectedImage(null)}
+            aria-label="Close image preview"
           >
             <X className="size-5" />
           </button>

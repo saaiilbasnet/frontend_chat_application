@@ -121,7 +121,7 @@ const GroupHeader = () => {
 
       {/* Members panel overlay */}
       {isMembersOpen && (
-        <div className="fixed inset-0 z-[55] flex items-stretch justify-end animate-fade-up">
+        <div className="fixed inset-0 z-50 flex items-stretch justify-end animate-fade-up">
           <div
             className="fixed inset-0 bg-black/40 backdrop-blur-sm"
             onClick={() => {
