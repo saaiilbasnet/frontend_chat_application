@@ -32,7 +32,7 @@ const ForgotPasswordPage = () => {
     if (!/\S+@\S+\.\S+/.test(formData.email)) return toast.error("Invalid email format");
 
     try {
-      await forgotPassword(formData.email.trim());
+      await forgotPassword(formData.email);
       setStep("reset");
       setResendTimer(30);
     } catch (error) {

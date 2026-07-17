@@ -109,7 +109,7 @@ export const useAuthStore = create((set, get) => ({
   forgotPassword: async (email) => {
     set({ isResettingPassword: true });
     try {
-      const res = await axiosInstance.post("/auth/forgot-password", { email });
+      const res = await axiosInstance.post("/auth/forgot-password", { email: email.trim().toLowerCase() });
       toast.success(res.data.message || "Password reset OTP sent");
       return res.data;
     } catch (error) {
