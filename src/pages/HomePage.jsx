@@ -35,7 +35,7 @@ const HomePage = () => {
             </div>
 
             {/* Chat pane: hidden on mobile when no chat is open */}
-            <div className={`${isChatOpen ? "flex" : "hidden md:flex"} flex-1 min-w-0`}>
+            <div className={`${isChatOpen ? "flex" : "hidden md:flex"} h-full min-h-0 flex-1 min-w-0`}>
               {selectedGroup ? (
                 <GroupChatContainer />
               ) : selectedUser ? (

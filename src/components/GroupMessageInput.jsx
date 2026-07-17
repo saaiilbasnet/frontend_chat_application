@@ -52,10 +52,10 @@ const GroupMessageInput = () => {
   const canSend = (text.trim() || imagePreview) && !isSending;
 
   return (
-    <div className="px-3 sm:px-4 py-3 border-t border-base-300/60 bg-transparent">
+    <div className="flex-shrink-0 border-t border-base-300/60 bg-base-100/85 px-2.5 py-2.5 shadow-[0_-10px_30px_rgba(0,0,0,0.04)] backdrop-blur-md sm:px-4 sm:py-3">
       {/* Image preview */}
       {imagePreview && (
-        <div className="mb-2.5 inline-flex items-start relative animate-fade-up">
+        <div className="mb-2.5 inline-flex items-start relative animate-fade-up rounded-2xl bg-base-200/70 p-1.5 border border-base-300/40">
           <img
             src={imagePreview}
             alt="Preview"
@@ -72,12 +72,12 @@ const GroupMessageInput = () => {
       )}
 
       {/* Input row */}
-      <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+      <form onSubmit={handleSendMessage} className="flex items-center gap-2 rounded-2xl border border-base-300/60 bg-base-200/45 p-1.5 transition-colors focus-within:border-primary/45 focus-within:bg-base-100/95 focus-within:shadow-sm">
         {/* Attach image */}
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className={`p-2.5 rounded-xl transition-all duration-150 flex-shrink-0 press border border-transparent
+          className={`flex size-10 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-150 press border border-transparent
             ${imagePreview
               ? "text-primary bg-primary/10 border-primary/20"
               : "text-base-content/40 hover:text-base-content/75 hover:bg-base-200/80"
@@ -96,7 +96,7 @@ const GroupMessageInput = () => {
         {/* Text input */}
         <input
           type="text"
-          className="flex-1 min-w-0 bg-base-200/60 border border-base-300/60 rounded-xl px-4 py-2.5 text-sm placeholder:text-base-content/30 focus:outline-none focus:border-primary/50 focus:bg-base-200/80 transition-all duration-150"
+          className="h-10 flex-1 min-w-0 bg-transparent px-2 text-sm placeholder:text-base-content/35 focus:outline-none"
           placeholder="Message the group…"
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -106,7 +106,7 @@ const GroupMessageInput = () => {
         <button
           type="submit"
           disabled={!canSend}
-          className={`p-2.5 rounded-xl transition-all duration-150 flex-shrink-0 press
+          className={`flex size-10 flex-shrink-0 items-center justify-center rounded-xl transition-all duration-150 press
             ${canSend
               ? "bg-primary text-primary-content shadow-md hover:brightness-105 hover:shadow-lg hover:shadow-primary/10"
               : "bg-base-200/60 text-base-content/20 cursor-not-allowed border border-base-300/10"

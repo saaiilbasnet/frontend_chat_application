@@ -1,6 +1,6 @@
 import { useChatStore } from "../store/useChatStore";
 import { useEffect, useRef, useState } from "react";
-import { X, MoreHorizontal, Edit3, Trash2 } from "lucide-react";
+import { X, Edit3, Trash2 } from "lucide-react";
 
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -68,20 +68,22 @@ const ChatContainer = () => {
 
   if (isMessagesLoading) {
     return (
-      <div className="flex-1 min-w-0 flex flex-col overflow-auto bg-transparent">
+      <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden bg-transparent">
         <ChatHeader />
-        <MessageSkeleton />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <MessageSkeleton />
+        </div>
         <MessageInput />
       </div>
     );
   }
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col overflow-auto bg-transparent">
+    <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden bg-transparent">
       <ChatHeader />
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 space-y-1">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 sm:px-4 py-4 space-y-1">
         {messages.map((message, index) => {
           const isMine = message.senderId === authUser._id;
           const prevMsg = messages[index - 1];
@@ -96,7 +98,7 @@ const ChatContainer = () => {
             <div
               key={message._id}
               ref={index === messages.length - 1 ? messageEndRef : null}
-              className={`flex items-end gap-2 group animate-fade-up
+              className={`flex items-end gap-1.5 sm:gap-2 group animate-fade-up
                 ${isMine ? "flex-row-reverse" : "flex-row"}
                 ${isGrouped ? "mt-0.5" : "mt-4"}
               `}
@@ -111,18 +113,18 @@ const ChatContainer = () => {
                         : selectedUser.profilePic || "/avatar.png"
                     }
                     alt="avatar"
-                    className="size-7 rounded-full object-cover ring-1 ring-base-300/10 shadow-sm"
+                    className="size-6 sm:size-7 rounded-full object-cover ring-1 ring-base-300/10 shadow-sm"
                   />
                 ) : (
-                  <div className="size-7" />
+                  <div className="size-6 sm:size-7" />
                 )}
               </div>
 
               {/* Message bubble + actions */}
-              <div className={`flex items-end gap-2 max-w-[82%] sm:max-w-[70%] min-w-0 ${isMine ? "flex-row-reverse" : "flex-row"}`}>
+              <div className={`flex items-end gap-1 sm:gap-2 max-w-[86%] sm:max-w-[70%] min-w-0 ${isMine ? "flex-row-reverse" : "flex-row"}`}>
                 {/* Actions — visible on hover, only for own messages */}
                 {isMine && editingMessageId !== message._id && (
-                  <div className="opacity-0 group-hover:opacity-100 transition-all duration-150 flex items-center gap-1 mb-1 scale-90 origin-right">
+                  <div className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-all duration-150 items-center gap-1 mb-1 scale-90 origin-right">
                     <button
                       onClick={() => startEdit(message)}
                       className="p-1.5 rounded-lg text-base-content/40 hover:text-base-content hover:bg-base-200/80 border border-base-300/10 backdrop-blur-sm transition-all duration-100 press"
@@ -143,7 +145,7 @@ const ChatContainer = () => {
                 <div className="flex flex-col min-w-0">
                   {/* Bubble */}
                   <div
-                    className={`rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm transition-all
+                    className={`rounded-2xl px-3 sm:px-4 py-2 text-sm leading-relaxed shadow-sm transition-all
                       ${isMine
                         ? "bg-primary text-primary-content rounded-br-sm"
                         : "bg-base-200/90 border border-base-300/40 text-base-content rounded-bl-sm"
@@ -155,7 +157,7 @@ const ChatContainer = () => {
                         <img
                           src={message.image}
                           alt="Attachment"
-                          className="max-w-[220px] rounded-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-200"
+                          className="max-w-[190px] sm:max-w-[220px] rounded-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-200"
                           onClick={() => setSelectedImage(message.image)}
                         />
                       </div>

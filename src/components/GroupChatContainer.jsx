@@ -1,7 +1,7 @@
 import { useGroupStore } from "../store/useGroupStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useEffect, useRef, useState } from "react";
-import { X, Edit3, Trash2 } from "lucide-react";
+import { X, Edit3, Trash2, MessageCircle } from "lucide-react";
 
 import GroupHeader from "./GroupHeader";
 import GroupMessageInput from "./GroupMessageInput";
@@ -72,26 +72,28 @@ const GroupChatContainer = () => {
 
   if (isGroupMessagesLoading) {
     return (
-      <div className="flex-1 min-w-0 flex flex-col overflow-auto bg-transparent">
+      <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden bg-transparent">
         <GroupHeader />
-        <MessageSkeleton />
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          <MessageSkeleton />
+        </div>
         <GroupMessageInput />
       </div>
     );
   }
 
   return (
-    <div className="flex-1 min-w-0 flex flex-col overflow-auto bg-transparent">
+    <div className="flex-1 min-h-0 min-w-0 flex flex-col overflow-hidden bg-transparent">
       <GroupHeader />
 
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 space-y-1">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 sm:px-4 py-4 space-y-1">
         {groupMessages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-2 py-12">
             <div className="size-12 rounded-2xl bg-base-200/80 flex items-center justify-center">
-              <span className="text-2xl">💬</span>
+              <MessageCircle className="size-6 text-base-content/35" />
             </div>
-            <p className="text-sm text-base-content/40">
+            <p className="text-sm text-base-content/40 text-center">
               No messages yet — say hello!
             </p>
           </div>
@@ -132,32 +134,32 @@ const GroupChatContainer = () => {
             <div
               key={message._id}
               ref={index === groupMessages.length - 1 ? messageEndRef : null}
-              className={`flex items-end gap-2 group animate-fade-up
+              className={`flex items-end gap-1.5 sm:gap-2 group animate-fade-up
                 ${isMine ? "flex-row-reverse" : "flex-row"}
                 ${isGrouped ? "mt-0.5" : "mt-4"}
               `}
             >
               {/* Avatar — only first in block, left side (others' messages) */}
-              <div className="flex-shrink-0 mb-0.5 w-7">
+              <div className={`flex-shrink-0 mb-0.5 ${isMine ? "hidden" : "w-6 sm:w-7"}`}>
                 {!isMine && !isGrouped ? (
                   <img
                     src={senderPic}
                     alt={senderName || "User"}
-                    className="size-7 rounded-full object-cover ring-1 ring-base-300/10 shadow-sm"
+                    className="size-6 sm:size-7 rounded-full object-cover ring-1 ring-base-300/10 shadow-sm"
                   />
                 ) : (
-                  <div className="size-7" />
+                  <div className="size-6 sm:size-7" />
                 )}
               </div>
 
               {/* Bubble + actions */}
               <div
-                className={`flex items-end gap-2 max-w-[82%] sm:max-w-[70%] min-w-0
+                className={`flex items-end gap-1 sm:gap-2 max-w-[86%] sm:max-w-[70%] min-w-0
                   ${isMine ? "flex-row-reverse" : "flex-row"}`}
               >
                 {/* Edit/Delete actions (hover, own messages only) */}
                 {isMine && editingMessageId !== message._id && (
-                  <div className="opacity-0 group-hover:opacity-100 transition-all duration-150 flex items-center gap-1 mb-1 scale-90 origin-right">
+                  <div className="hidden sm:flex opacity-0 group-hover:opacity-100 transition-all duration-150 items-center gap-1 mb-1 scale-90 origin-right">
                     <button
                       onClick={() => startEdit(message)}
                       className="p-1.5 rounded-lg text-base-content/40 hover:text-base-content hover:bg-base-200/80 border border-base-300/10 backdrop-blur-sm transition-all duration-100 press"
@@ -185,7 +187,7 @@ const GroupChatContainer = () => {
 
                   {/* Bubble */}
                   <div
-                    className={`rounded-2xl px-4 py-2 text-sm leading-relaxed shadow-sm transition-all
+                    className={`rounded-2xl px-3 sm:px-4 py-2 text-sm leading-relaxed shadow-sm transition-all
                       ${isMine
                         ? "bg-primary text-primary-content rounded-br-sm"
                         : "bg-base-200/90 border border-base-300/40 text-base-content rounded-bl-sm"
@@ -197,7 +199,7 @@ const GroupChatContainer = () => {
                         <img
                           src={message.image}
                           alt="Attachment"
-                          className="max-w-[220px] rounded-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-200"
+                          className="max-w-[190px] sm:max-w-[220px] rounded-lg cursor-pointer hover:scale-[1.02] active:scale-95 transition-all duration-200"
                           onClick={() => setSelectedImage(message.image)}
                         />
                       </div>

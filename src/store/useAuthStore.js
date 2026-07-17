@@ -24,6 +24,7 @@ export const useAuthStore = create((set, get) => ({
   authUser: null,
   isSigningUp: false,
   isLoggingIn: false,
+  isResettingPassword: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
   requireOtp: false,
@@ -100,6 +101,34 @@ export const useAuthStore = create((set, get) => ({
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to resend OTP");
       throw error;
+    }
+  },
+
+  forgotPassword: async (email) => {
+    set({ isResettingPassword: true });
+    try {
+      const res = await axiosInstance.post("/auth/forgot-password", { email });
+      toast.success(res.data.message || "Password reset OTP sent");
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to send reset OTP");
+      throw error;
+    } finally {
+      set({ isResettingPassword: false });
+    }
+  },
+
+  resetPassword: async ({ email, otp, password }) => {
+    set({ isResettingPassword: true });
+    try {
+      const res = await axiosInstance.post("/auth/reset-password", { email, otp, password });
+      toast.success(res.data.message || "Password reset successfully");
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to reset password");
+      throw error;
+    } finally {
+      set({ isResettingPassword: false });
     }
   },
 
