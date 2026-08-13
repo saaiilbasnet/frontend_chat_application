@@ -1,14 +1,41 @@
 import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Camera, Mail, User } from "lucide-react";
+import { Camera, Mail, User, Lock } from "lucide-react";
 import ConfirmationModal from "../components/ConfirmationModal";
+import toast from "react-hot-toast";
 
 const ProfilePage = () => {
-  const { authUser, isUpdatingProfile, updateProfile, deleteAccount } = useAuthStore();
+  const {
+    authUser,
+    isUpdatingProfile,
+    updateProfile,
+    deleteAccount,
+    requireEmailChangeOtp,
+    pendingEmail,
+    verifyEmailChange,
+    resendEmailChangeOtp,
+  } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [fullName, setFullName] = useState(authUser?.fullName || "");
   const [email, setEmail] = useState(authUser?.email || "");
+  const [emailOtp, setEmailOtp] = useState("");
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+
+  const handleVerifyEmailChange = async () => {
+    if (!emailOtp.trim() || emailOtp.length !== 6) {
+      return toast.error("Please enter a valid 6-digit OTP");
+    }
+    setIsVerifyingEmail(true);
+    try {
+      await verifyEmailChange(emailOtp);
+      setEmailOtp("");
+    } catch {
+      // toast already shown by the store
+    } finally {
+      setIsVerifyingEmail(false);
+    }
+  };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -133,6 +160,47 @@ const ProfilePage = () => {
         message="Your account and all data will be permanently deleted. This cannot be undone."
         confirmText="Delete account"
       />
+
+      {requireEmailChangeOtp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-up">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="relative bg-base-100 border border-base-300/80 w-full max-w-sm rounded-2xl shadow-2xl p-6 z-10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Lock className="size-4 text-primary" />
+              </div>
+              <h3 className="font-semibold text-base">Verify new email</h3>
+            </div>
+            <p className="text-sm text-base-content/60 leading-relaxed mb-4 pl-11">
+              We sent a verification code to {pendingEmail}. Enter it below to confirm this email change.
+            </p>
+            <div className="px-11 space-y-4">
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={emailOtp}
+                onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, ""))}
+                placeholder="6-digit code"
+                className="w-full px-4 py-2.5 bg-base-200/60 rounded-xl border border-base-300/60 text-sm text-center tracking-widest focus:outline-none focus:border-primary/50 transition-colors"
+              />
+              <button
+                onClick={handleVerifyEmailChange}
+                disabled={isVerifyingEmail}
+                className="w-full py-2.5 rounded-xl bg-primary text-primary-content text-sm font-medium hover:brightness-105 transition-all press disabled:opacity-60"
+              >
+                {isVerifyingEmail ? "Verifying…" : "Verify"}
+              </button>
+              <button
+                onClick={() => resendEmailChangeOtp()}
+                className="w-full text-xs text-base-content/50 hover:text-base-content transition-colors"
+              >
+                Didn't receive code? Resend OTP
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

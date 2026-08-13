@@ -16,6 +16,8 @@ export const useAuthStore = create((set, get) => ({
   isCheckingAuth: true,
   requireOtp: false,
   signupEmail: null,
+  requireEmailChangeOtp: false,
+  pendingEmail: null,
   onlineUsers: [],
   socket: null,
 
@@ -140,12 +142,43 @@ export const useAuthStore = create((set, get) => ({
     set({ isUpdatingProfile: true });
     try {
       const res = await axiosInstance.put("/auth/update-profile", data);
-      set({ authUser: res.data });
-      toast.success("Profile updated successfully");
+      if (res.data.requireEmailOtp) {
+        set({ requireEmailChangeOtp: true, pendingEmail: res.data.pendingEmail });
+        toast.success(res.data.message || "OTP sent to your new email");
+      } else {
+        set({ authUser: res.data });
+        toast.success("Profile updated successfully");
+      }
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to update profile");
     } finally {
       set({ isUpdatingProfile: false });
+    }
+  },
+
+  verifyEmailChange: async (otp) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const res = await axiosInstance.post("/auth/verify-email-change", { otp });
+      set({ authUser: res.data, requireEmailChangeOtp: false, pendingEmail: null });
+      toast.success("Email updated successfully");
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Invalid OTP");
+      throw error;
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  },
+
+  resendEmailChangeOtp: async () => {
+    try {
+      const res = await axiosInstance.post("/auth/resend-email-change-otp");
+      toast.success(res.data.message || "OTP resent successfully");
+      return res.data;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to resend OTP");
+      throw error;
     }
   },
 
